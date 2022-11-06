@@ -3,27 +3,22 @@ const { StatusCodes } = require('http-status-codes')
 const { BadRequestError, NotFoundError } = require('../errors')
 
 const getAllUsers = async (req, res) => {
-    const users = await User.find({ createdBy: req.user.userId }).sort('createdAt')
+    const users = await User.find({ isActive: true })
     res.status(StatusCodes.OK).json({ users, count: users.length })
 }
 const getUser = async (req, res) => {
-    const {
-        user: { userId },
-        params: { id: UserId },
-    } = req
+    const id = req.params.id;
 
     const user = await User.findOne({
-        _id: UserId,
-        createdBy: userId,
+        _id: id,
     })
     if (!user) {
-        throw new NotFoundError(`No User with id ${user._id}`)
+        throw new NotFoundError(`No User with id ${id}`)
     }
     res.status(StatusCodes.OK).json({ user })
 }
 
 const createUser = async (req, res) => {
-    req.body.createdBy = req.user.userId
     const user = await User.create(req.body)
     res.status(StatusCodes.CREATED).json({ user })
 }
@@ -66,6 +61,18 @@ const healthcheck = async (req, res) => {
     res.status(StatusCodes.OK).json({ status: 'OK' })
 }
 
+const filterUsers = async (req, res) => {
+    const {
+        user: { userId },
+        query: { name },
+    } = req
+
+    const users = await User.find({
+        name: { $regex: name, $options: 'i' },
+    })
+    res.status(StatusCodes.OK).json({ users, count: users.length })
+}
+
 module.exports = {
     createUser,
     deleteUser,
@@ -73,4 +80,5 @@ module.exports = {
     updateUser,
     getUser,
     healthcheck,
+    filterUsers,
 }
