@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
+const GenericModel = require('./GenericModel');
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new GenericModel()
+UserSchema.add({
     name: {
         type: String,
         required: true,
@@ -22,10 +23,6 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minLength: 6,
         select: false,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
     },
 });
 
@@ -50,4 +47,3 @@ UserSchema.methods.comparePassword = async function (canditatePassword) {
 }
 
 module.exports = mongoose.model('User', UserSchema, 'users');
-
